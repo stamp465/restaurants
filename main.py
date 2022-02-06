@@ -1,3 +1,6 @@
+# Set that 1 person can reserve multiple tables.
+# But no one has rebooked the same table number twice in a day, even though they booked at different times. 
+
 from shelve import BsdDbShelf
 from pymongo import MongoClient
 
@@ -56,6 +59,10 @@ def reserve(reservation : Reservation):
             return {
                 f'''Suppose that on table number {reservation.table_number} has a reservation at {reservation.time}:00. You can't make a reservation on that time and that table.'''
             }
+        if i["name"] == reservation.name :
+            return {
+                f'''{reservation.name}, you cannot reserve this table again. because you have already booked it in this days'''
+            }
     a = jsonable_encoder(reservation)
     collection.insert_one(a)
     return {
@@ -64,7 +71,6 @@ def reserve(reservation : Reservation):
 
 @app.put("/reservation/update/")
 def update_reservation(reservation: Reservation):
-    
     myquery = {     "name": reservation.name,   "table_number" : reservation.table_number   }
     newvalues = { "$set": { "time": reservation.time } }
     
