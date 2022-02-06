@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 
 class Reservation(BaseModel):
     name : str
-    time: int
+    time: float
     table_number: int
     
 client = MongoClient('mongodb://localhost', 27018)
@@ -23,35 +23,20 @@ app = FastAPI()
 
 @app.get("/")
 def get_roots():
-    return "Welcome"
+    return "Welcome to restaurants"
 
 @app.get("/reservation")
-def get_all_data():
-    result = collection.find({},{"_id":0})
-    dic = []
-    for r in result:
-        print(r)
-        dic.append(r)
-    return dic
+def get_all_reservation():
+    return [ r for r in collection.find({},{"_id":0}) ]
 
 # TODO complete all endpoint.
 @app.get("/reservation/by-name/{name}")
 def get_reservation_by_name(name:str):
-    result = collection.find({"name":name},{"_id":0})
-    dic = []
-    for r in result:
-        print(r)
-        dic.append(r)
-    return dic
+    return [ r for r in collection.find({"name":name},{"_id":0}) ]
 
-@app.get("reservation/by-table/{table}")
+@app.get("/reservation/by-table/{table}")
 def get_reservation_by_table(table: int):
-    result = collection.find({"table_number":table},{"_id":0})
-    dic = []
-    for r in result:
-        print(r)
-        dic.append(r)
-    return dic
+    return [ r for r in collection.find({"table_number":table},{"_id":0}) ]
 
 @app.post("/reservation")
 def reserve(reservation : Reservation):
@@ -62,7 +47,6 @@ def reserve(reservation : Reservation):
                 f'''Suppose that on table number {reservation.table_number} has a reservation at {reservation.time}:00. You can't make a reservation on that time and that table.'''
             }
     a = jsonable_encoder(reservation)
-    print(a)
     collection.insert_one(a)
     return {
         "result" : "reserve done"
@@ -82,7 +66,6 @@ def update_reservation(reservation: Reservation):
             return {
                 f'''Suppose that on table number {reservation.table_number} has a reservation at {reservation.time}:00. You can't make a reservation on that time and that table.'''
             }
-    print("can up ?")
     print(myquery,newvalues)
     collection.update_one(myquery, newvalues)
     return {
