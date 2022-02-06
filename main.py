@@ -31,7 +31,7 @@ def get_roots():
 @app.get("/reservation")
 def get_all_reservation():
     result = [ r for r in collection.find({},{"_id":0}) ]
-    if result != None :
+    if result != [] :
         return result
     raise HTTPException( status_code = 404 , detail = { "msg" : "No reservation" } )
 
@@ -39,21 +39,20 @@ def get_all_reservation():
 @app.get("/reservation/by-name/{name}")
 def get_reservation_by_name(name:str):
     result = [ r for r in collection.find({"name":name},{"_id":0}) ]
-    if result != None :
+    if result != [] :
         return result
     raise HTTPException( status_code = 404 , detail = { "msg" : "No reservation" } )
 
 @app.get("/reservation/by-table/{table}")
 def get_reservation_by_table(table: int):
     result =  [ r for r in collection.find({"table_number":table},{"_id":0}) ]
-    if result != None :
+    if result != [] :
         return result
     raise HTTPException( status_code = 404 , detail = { "msg" : "No reservation" } )
 
 @app.post("/reservation")
 def reserve(reservation : Reservation):
-    
-    result = collection.find({"table_number":reservation.table_number},{"_id":0})
+    result = [ r for r in collection.find({"table_number":reservation.table_number},{"_id":0}) ]
     for i in result :
         if reservation.time == i["time"] :
             return {
@@ -74,8 +73,8 @@ def update_reservation(reservation: Reservation):
     myquery = {     "name": reservation.name,   "table_number" : reservation.table_number   }
     newvalues = { "$set": { "time": reservation.time } }
     
-    result = collection.find({"table_number":reservation.table_number},{"_id":0})
-    if result == None :
+    result = [ r for r in collection.find(myquery,{"_id":0}) ]
+    if result == [] :
         raise HTTPException( status_code = 404 , detail = { "msg" : "No reservation" } )
     
     for i in result :
